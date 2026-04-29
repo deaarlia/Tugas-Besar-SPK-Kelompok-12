@@ -39,12 +39,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// === LOAD SISA RUTE YANG ADA ===
-try {
-    const apiRoutes = require('./routes/apiRoutes'); 
-    app.use('/api', apiRoutes);
-} catch(e) {
-    console.log("Abaikan kalau rute lain error, fokus login dulu");
-}
+const apiRoutes = require('./routes/apiRoutes'); 
+app.use('/api', apiRoutes);
 
 module.exports = app;

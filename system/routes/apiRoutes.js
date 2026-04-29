@@ -37,17 +37,17 @@ const upload = multer({
 });
 
 // ===============================================
-// 3. ROUTE PUBLIC (Tidak butuh token)
+// 3. ROUTE PUBLIC
 // ===============================================
 router.post('/login', authCtrl.login); 
 router.get('/anggota', anggotaCtrl.getAnggota);
 router.get('/hitung-saw', sawCtrl.hitungSAW);
 router.get('/kriteria', kriteriaCtrl.getKriteria);
 router.get('/jadwal-final', jadwalCtrl.getJadwalFinal); 
-router.get('/pengaturan', pengaturanCtrl.getPengaturan); // <--- Cek status periode (Buka/Tutup)
+router.get('/pengaturan', pengaturanCtrl.getPengaturan);
 
 // ===============================================
-// 4. ROUTE PRIVATE (Boleh Admin & Anggota Biasa)
+// 4. ROUTE PRIVATE
 // ===============================================
 router.put('/jadwal/:anggotaId', cekToken, jadwalCtrl.simpanJadwal);
 router.post('/anggota/upload-krs', cekToken, upload.single('fileKrs'), anggotaCtrl.uploadKRS);
@@ -59,10 +59,7 @@ router.post('/anggota', cekToken, cekAdmin, anggotaCtrl.tambahAnggota);
 router.put('/kriteria', cekToken, cekAdmin, kriteriaCtrl.updateBobot);
 router.put('/penugasan', cekToken, cekAdmin, jadwalCtrl.setPenugasan);
 router.post('/kriteria', cekToken, cekAdmin, kriteriaCtrl.tambahKriteria);
-
-// Admin buka/tutup periode jadwal
 router.put('/pengaturan', cekToken, cekAdmin, pengaturanCtrl.updatePengaturan);
-// Admin setujui/tolak pengajuan jadwal dari user
 router.put('/jadwal/review/:anggotaId', cekToken, cekAdmin, jadwalCtrl.reviewPengajuan);
 
 module.exports = router;
