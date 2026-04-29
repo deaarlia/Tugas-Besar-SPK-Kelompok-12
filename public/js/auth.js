@@ -57,50 +57,42 @@ window.handleLogout = async () => {
 window.checkSession = async () => {
     const token = localStorage.getItem('adminToken');
     const role = localStorage.getItem('userRole'); 
-    
-    // Pastikan element ada sebelum dimanipulasi agar tidak error
+    const currentPath = window.location.pathname;
+
     const screenLogin = document.getElementById('screen-login');
     const screenApp = document.getElementById('screen-app');
 
-    if (token) {
-        // SEMBUNYIKAN LOGIN, TAMPILKAN APP
-        if(screenLogin) screenLogin.style.display = 'none';
-        if(screenApp) screenApp.style.display = 'block';
-        
-        // Load data periode
-        try {
-            let resPeriode = await fetch(`${API_URL}/pengaturan`);
-            let dataPeriode = await resPeriode.json();
-            AppState.statusPeriode = dataPeriode.status;
-        } catch(e) {}
+    // JIKA TIDAK ADA TOKEN tapi mencoba akses halaman selain login
+    if (!token) {
+        if (!currentPath.endsWith('index.html') && currentPath !== '/') {
+            window.location.href = '/index.html';
+            return;
+        }
+        if (screenLogin) screenLogin.classList.remove('hidden');
+        if (screenApp) screenApp.classList.add('hidden');
+        return;
+    }
 
+    // JIKA ADA TOKEN
+    if (token) {
+        // Jika masih di halaman login (index.html), lempar ke halaman yang sesuai
+        if (currentPath.endsWith('index.html') || currentPath === '/') {
+            window.location.href = role === 'admin' ? '/admin.html' : '/user.html';
+            return;
+        }
+
+        // Tampilkan aplikasi, sembunyikan login
+        if (screenLogin) screenLogin.classList.add('hidden');
+        if (screenApp) screenApp.classList.remove('hidden');
+
+        // Update UI Badge
         const roleBadge = document.getElementById('role-badge');
-        if(roleBadge) {
+        if (roleBadge) {
             roleBadge.innerText = role === 'admin' ? 'Admin Panel' : 'Member Area';
         }
-        
-        // Logika Menu
-        const adminMenus = document.getElementById('admin-menus');
-        const userMenus = document.getElementById('menu-jadwal-saya');
 
-        if (role === 'admin') {
-            if(adminMenus) adminMenus.style.display = 'block';
-            if(userMenus) userMenus.style.display = 'none'; 
-            window.loadPage('dashboard');
-        } else {
-            if(adminMenus) adminMenus.style.display = 'none'; 
-            if(userMenus) userMenus.style.display = 'flex'; 
-            window.loadPage('dashboard'); 
-        }
-    } else {
-        // TIDAK ADA TOKEN: TAMPILKAN LOGIN, SEMBUNYIKAN APP
-        if(screenApp) screenApp.style.display = 'none';
-        if(screenLogin) screenLogin.style.display = 'block';
-        
-        // Jika sedang di halaman admin/user tapi tidak ada token, tendang ke index
-        if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
-            window.location.href = '/index.html';
-        }
+        // Jalankan loadPage sesuai role
+        window.loadPage('dashboard');
     }
 };
 
