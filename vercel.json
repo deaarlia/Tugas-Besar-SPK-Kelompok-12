@@ -1,10 +1,21 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
   "builds": [
     {
       "src": "api/[...route].js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "pages/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "assets/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -13,8 +24,20 @@
       "dest": "/api/[...route].js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/js/$1"
+    },
+    {
+      "src": "/(.*\\.html)",
+      "dest": "/pages/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/pages/index.html"
     }
   ]
 }
