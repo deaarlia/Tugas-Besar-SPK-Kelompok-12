@@ -9,7 +9,7 @@ app.use(express.json());
 const path = require('path');
 
 // Izinkan akses publik ke folder uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Sambungkan ke rute
 if (process.env.NODE_ENV !== 'production') {
