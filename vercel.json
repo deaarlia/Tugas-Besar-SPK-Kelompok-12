@@ -6,7 +6,7 @@
       "destination": "/api/[...route].js"
     },
     {
-      "source": "/((?!api/.*).*)",
+      "source": "/((?!api/|assets/|js/|pages/).*)",
       "destination": "/index.html"
     }
   ]
