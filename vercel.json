@@ -1,43 +1,9 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/[...route].js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "pages/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "assets/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "js/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/[...route].js"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/js/(.*)",
-      "dest": "/js/$1"
-    },
-    {
-      "src": "/(.*\\.html)",
-      "dest": "/pages/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/index.html"
+      "source": "/api/(.*)",
+      "destination": "/api/[...route].js"
     }
   ]
 }
