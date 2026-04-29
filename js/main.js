@@ -65,7 +65,7 @@ window.addEventListener('load', () => {
     }
 });
 
-window.showToast = (message, type = 'success') => {
+alert = (message, type = 'success') => {
     const container = document.getElementById('toast-container');
     
     // Bikin elemen toast baru

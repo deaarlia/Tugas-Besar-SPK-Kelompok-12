@@ -7,7 +7,7 @@ window.handleLogin = async () => {
     const pass = passField.value;
 
     if (!user || !pass) {
-        window.showToast('Harap isi semua kolom!', 'error');
+        alert('Harap isi semua kolom!', 'error');
         return;
     }
 
@@ -38,11 +38,11 @@ window.handleLogin = async () => {
             }
         } else {
             // Menggunakan Toast saja untuk error, tanpa memunculkan elemen p di HTML
-            window.showToast(data.error || 'Username atau Password salah!', 'error');
+            alert(data.error || 'Username atau Password salah!', 'error');
             passField.value = ''; // Kosongkan password untuk keamanan
         }
     } catch (err) { 
-        window.showToast('Gagal terhubung ke server login.', 'error'); 
+        alert('Gagal terhubung ke server login.', 'error'); 
     }
 };
 
