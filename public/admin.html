@@ -109,23 +109,18 @@
     <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
     <script type="module">
-        import './js/config.js';
-        import './js/main.js';
-        import './js/admin.js';
+    import './js/config.js';
+    import './js/main.js';
+    import './js/admin.js';
 
-        if(localStorage.getItem('userRole') !== 'admin') {
-            window.location.href = '/index.html'; // Pakai slash!
+    window.addEventListener('load', () => {
+        if (localStorage.getItem('userRole') !== 'admin') {
+            window.location.href = '/index.html';
+            return;
         }
-
-        // Cek Keamanan
-        window.addEventListener('load', () => {
-            if(localStorage.getItem('userRole') !== 'admin') {
-                window.location.href = 'index.html';
-            } else {
-                const lastPage = window.location.hash.substring(1);
-                window.loadPage(lastPage || 'dashboard');
-            }
-        });
-    </script>
+        const lastPage = window.location.hash.substring(1);
+        window.loadPage(lastPage || 'dashboard');
+    });
+</script>
 </body>
 </html>

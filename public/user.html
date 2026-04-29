@@ -81,42 +81,18 @@
     <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
     <script type="module">
-        import './js/config.js';
-        import './js/main.js';
-        import './js/user.js';
+    import './js/config.js';
+    import './js/main.js';
+    import './js/user.js';
 
-    if(localStorage.getItem('userRole') !== 'user') {
-        window.location.href = '/index.html'; // Pakai slash!
-    }
-
-        const renderProfile = () => {
-            let nama = localStorage.getItem('userName');
-            let nim = localStorage.getItem('userNim');
-
-            if (!nama || nama === 'undefined' || nama === 'null') nama = 'Anggota Piket';
-            if (!nim || nim === 'undefined' || nim === 'null') nim = 'MEMBER AREA';
-
-            document.getElementById('user-profile-header').innerHTML = `
-                <div class="text-right hidden sm:block">
-                    <p class="text-sm font-bold text-slate-200">${nama}</p>
-                    <p class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">${nim}</p>
-                </div>
-                <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 shadow-sm">
-                    <i class="ph-fill ph-user text-xl"></i>
-                </div>
-            `;
-        };
-
-        // Cek Keamanan
-        window.addEventListener('load', () => {
-            if(localStorage.getItem('userRole') !== 'user') {
-                window.location.href = 'index.html';
-            } else {
-                renderProfile();
-                const lastPage = window.location.hash.substring(1);
-                window.loadPage(lastPage || 'dashboard');
-            }
-        });
+    window.addEventListener('load', () => {
+        if (localStorage.getItem('userRole') !== 'user') {
+            window.location.href = '/index.html';
+            return;
+        }
+        const lastPage = window.location.hash.substring(1);
+        window.loadPage(lastPage || 'dashboard');
+    });
     </script>
 </body>
 </html>

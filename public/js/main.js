@@ -349,6 +349,3 @@ const inisialisasiAplikasi = () => {
         window.checkSession();
     }
 };
-
-// Panggil langsung fungsinya di sini!
-inisialisasiAplikasi();
