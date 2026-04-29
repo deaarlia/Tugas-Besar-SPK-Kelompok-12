@@ -14,7 +14,7 @@ window.loadPage = async (pageName) => {
     }
 
     try {
-        const response = await fetch(`pages/${pageName}.html?v=${new Date().getTime()}`);
+        const response = await fetch(`/public/pages/${pageName}.html?v=${new Date().getTime()}`);
         if (!response.ok) throw new Error("Gagal memuat " + pageName);
         document.getElementById('app-content').innerHTML = await response.text();
 
@@ -323,7 +323,7 @@ window.loadAboutPage = async () => {
     const container = document.getElementById('app-content');
     try {
         // Ambil isi file about.html
-        const response = await fetch('pages/about.html');
+        const response = await fetch('/publicpages/about.html');
         const html = await response.text();
         
         // Suntikkan ke dashboard

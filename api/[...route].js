@@ -1,4 +1,4 @@
-process.chdir('/var/task');
-
-const app = require('../app');
-module.exports = app;
+const app = require('../app'); // Pastikan path ke app.js benar
+module.exports = (req, res) => {
+    return app(req, res);
+};
