@@ -6,6 +6,18 @@
       "destination": "/api/[...route].js"
     },
     {
+      "source": "/assets/(.*)",
+      "destination": "/public/assets/$1"
+    },
+    {
+      "source": "/js/(.*)",
+      "destination": "/public/js/$1"
+    },
+    {
+      "source": "/pages/(.*)",
+      "destination": "/public/pages/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/public/$1"
     }
