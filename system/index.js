@@ -12,8 +12,8 @@ const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Sambungkan ke rute
-app.use('/api', apiRoutes);
-
-app.listen(3000, () => {
-    console.log('Backend berjalan  di http://localhost:3000');
-});
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(3000, () => {
+        console.log('Backend berjalan di http://localhost:3000');
+    });
+}
