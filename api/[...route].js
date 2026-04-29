@@ -1,4 +1,4 @@
 process.chdir('/var/task');
 
-const app = require('../system/app');
+const app = require('../app');
 module.exports = app;

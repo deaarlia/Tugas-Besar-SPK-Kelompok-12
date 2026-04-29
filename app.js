@@ -39,7 +39,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-const apiRoutes = require('./routes/apiRoutes'); 
+const apiRoutes = require('./system/routes/apiRoutes')
 app.use('/api', apiRoutes);
 
 module.exports = app;
