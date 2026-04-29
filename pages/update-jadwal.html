@@ -1,0 +1,42 @@
+<div class="space-y-5 mx-auto pb-8" id="page-update-jadwal">
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-100 tracking-tight">Update Jadwal & KRS</h2>
+            <p class="text-slate-400 mt-1 text-sm">Isikan jadwal dan data KRS pada form yang disediakan.</p>
+        </div>
+        <div id="status-periode-label"></div>
+    </div>
+
+    <div class="bg-slate-800 rounded-xl shadow-xl border border-slate-700 overflow-hidden flex flex-col">
+        
+        <div class="bg-indigo-500/10 p-5 border-b border-indigo-500/20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="text-2xl text-indigo-400"><i class="ph-fill ph-file-pdf"></i></div>
+                <div>
+                    <h3 class="font-bold text-indigo-300 text-sm">Lampiran Bukti KRS (PDF)</h3>
+                    <p id="teks-desc-krs" class="text-[13px] text-indigo-200/70">Silakan unggah file KRS dalam format .pdf untuk validasi data.</p>
+                    <div id="file-link-skrg" class="text-xs font-bold text-emerald-400"></div>
+                </div>
+            </div>
+            <input type="file" id="inp-file-krs" accept="application/pdf" class="text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-500/20 file:text-indigo-300 hover:file:bg-indigo-500/30 cursor-pointer transition-colors">
+        </div>
+
+        <div class="bg-slate-900/50 p-2.5 flex space-x-1 overflow-x-auto border-b border-slate-700" id="day-tabs">
+            <button onclick="changeTab('senin')" class="tab-btn bg-slate-700 text-indigo-400 shadow-sm px-5 py-1.5 rounded-lg font-bold text-sm transition border border-slate-600">Senin</button>
+            <button onclick="changeTab('selasa')" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800 px-5 py-1.5 rounded-lg font-bold text-sm transition">Selasa</button>
+            <button onclick="changeTab('rabu')" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800 px-5 py-1.5 rounded-lg font-bold text-sm transition">Rabu</button>
+            <button onclick="changeTab('kamis')" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800 px-5 py-1.5 rounded-lg font-bold text-sm transition">Kamis</button>
+            <button onclick="changeTab('jumat')" class="tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800 px-5 py-1.5 rounded-lg font-bold text-sm transition">Jumat</button>
+        </div>
+
+        <div class="p-5 sm:p-6 bg-slate-800" id="tab-content-area">
+        </div>
+
+        <div class="bg-slate-900/50 p-4 sm:p-5 border-t border-slate-700 flex justify-end items-center space-x-4">
+            <p id="msg-tutup" class="hidden text-xs text-amber-400 italic font-medium"><i class="ph-fill ph-warning-circle mr-1"></i> Periode ditutup, perubahan akan diajukan ke admin.</p>
+            <button id="btn-save-jadwal" onclick="submitJadwalUser()" class="px-6 py-2.5 text-sm bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 rounded-lg font-bold transition shadow-sm">
+                Simpan Perubahan Jadwal
+            </button>
+        </div>
+    </div>
+</div>

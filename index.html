@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPK Penjadwalan Piket - Neo Telemetri</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style type="text/tailwindcss">
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+
+    <script>
+        // Konfigurasi Tailwind untuk efek background Sphere Lights
+        tailwind.config = {
+            theme: {
+                extend: {
+                    backgroundImage: {
+                        'sphere-lights': 'radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.15) 0%, rgba(2, 6, 23, 0) 50%), radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.15) 0%, rgba(2, 6, 23, 0) 50%)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 font-sans text-slate-200 h-screen overflow-hidden selection:bg-indigo-500/30">
+
+    <div id="screen-login" class="flex h-screen items-center justify-center bg-sphere-lights transition-all duration-700 relative overflow-hidden">
+        
+        <div class="absolute inset-0 bg-sphere-lights opacity-60 blur-3xl z-0 pointer-events-none"></div>
+
+        <div class="bg-slate-900/80 backdrop-blur-md rounded-lg shadow-[0_15px_60px_-15px_rgba(0,0,0,0.7)] w-full max-w-[400px] p-12 border border-slate-800 relative z-10">
+            
+            <div class="text-center mb-10">
+                <img src="assets/logo-neo-white.png" alt="Logo Neo Telemetri" class="h-36 w-auto object-contain -mb-8 -mt-8 mx-auto opacity-90">
+                <h2 class="text-2xl font-bold text-slate-100 tracking-tight">Neo Telemetri</h2>
+                <p class="text-slate-400 mt-1.5 text-sm">Sistem Penjadwalan Piket berbasis SAW</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1.5">Username atau NIM</label>
+                    <input type="text" id="login-user" placeholder="Masukkan ID Anda" class="w-full border border-slate-700 rounded-lg px-4 py-3 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition bg-slate-950 hover:bg-slate-900 text-sm text-slate-200 placeholder-slate-500 shadow-inner">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+                    <div class="relative">
+                        <input type="password" id="login-pass" placeholder="••••••••" class="w-full border border-slate-700 rounded-lg pl-4 pr-11 py-3 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition bg-slate-950 hover:bg-slate-900 text-sm text-slate-200 placeholder-slate-500 shadow-inner">
+                        
+                        <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-indigo-400 focus:outline-none transition-colors">
+                            <i id="eye-icon" class="ph ph-eye text-2xl"></i>
+                        </button>
+                    </div>
+
+                    <p id="login-error" class="hidden text-rose-500 text-xs mt-2 font-medium flex items-center">
+                        <i class="ph-fill ph-warning-circle mr-1 text-sm"></i> Username atau password salah.
+                    </p>
+                </div>
+                
+                <div class="pt-4">
+                    <button onclick="handleLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-lg shadow-lg shadow-indigo-600/20 transition-all duration-200 text-sm tracking-wide transform active:scale-[0.98]">
+                        Masuk
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+    <script type="module">
+        // Hanya memanggil modul auth.js
+        import './js/auth.js';
+        
+        window.togglePassword = () => {
+            const passInput = document.getElementById('login-pass');
+            const eyeIcon = document.getElementById('eye-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.classList.replace('ph-eye', 'ph-eye-slash');
+            } else {
+                passInput.type = 'password';
+                eyeIcon.classList.replace('ph-eye-slash', 'ph-eye');
+            }
+        };
+
+        // Menyembunyikan pesan error merah saat user mulai mengetik ulang
+        document.getElementById('login-user').addEventListener('input', () => {
+            document.getElementById('login-error').classList.add('hidden');
+        });
+        document.getElementById('login-pass').addEventListener('input', () => {
+            document.getElementById('login-error').classList.add('hidden');
+        });
+    </script>
+</body>
+</html>

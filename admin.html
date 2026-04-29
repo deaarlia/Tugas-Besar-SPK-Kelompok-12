@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - SPK Neo Telemetri</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style type="text/tailwindcss">
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .group:hover .nav-icon { @apply scale-110; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 h-screen overflow-hidden">
+
+    <div class="h-screen flex overflow-hidden bg-slate-900 text-slate-200">
+        
+        <aside id="main-sidebar" class="w-20 h-full flex-shrink-0 bg-slate-950 border-r border-slate-800 shadow-2xl transition-[width] duration-300 ease-in-out z-30 flex flex-col overflow-hidden">
+            
+            <div class="h-[73px] w-full flex items-center justify-center border-b border-slate-800 cursor-pointer hover:bg-slate-800 transition-colors" onclick="window.toggleSidebar()">
+                <img id="sidebar-logo" src="assets/logo-neo-white.png" alt="Logo" class="w-10 h-10 object-contain transition-transform duration-300 ease-in-out origin-center">
+            </div>
+            
+            <nav class="flex-1 py-4 overflow-y-auto overflow-x-hidden flex flex-col w-full">
+                
+                <button id="menu-dashboard" onclick="loadPage('dashboard')" title="Dashboard Piket" class="w-full flex items-center h-12 hover:bg-slate-800 transition-colors group">
+                    <div class="w-20 flex-shrink-0 flex items-center justify-center">
+                       <i class="ph ph-chart-bar text-2xl text-slate-400 group-hover:text-indigo-400 transition-colors nav-icon"></i>
+                    </div>
+                    <span class="whitespace-nowrap font-medium text-slate-400 group-hover:text-slate-100 transition-opacity duration-300 opacity-0 sidebar-text pr-4">Dashboard Piket</span>
+                </button>
+
+                <div id="admin-menus" class="w-full pt-4 mt-2 border-t border-slate-800">
+                    <div class="overflow-hidden mb-2">
+                        <div class="pl-20">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] whitespace-nowrap opacity-0 transition-opacity duration-300 sidebar-text">Manajemen</p>
+                        </div>
+                    </div>
+                    
+                    <button id="menu-anggota" onclick="loadPage('anggota')" title="Kelola Anggota" class="w-full flex items-center h-12 hover:bg-slate-800 transition-colors group">
+                        <div class="w-20 flex-shrink-0 flex items-center justify-center">
+                            <i class="ph ph-users text-2xl text-slate-400 group-hover:text-indigo-400 transition-colors nav-icon"></i>
+                        </div>
+                        <span class="whitespace-nowrap text-sm text-slate-400 group-hover:text-slate-100 transition-opacity duration-300 opacity-0 sidebar-text pr-4">Kelola Anggota</span>
+                    </button>
+                    
+                    <button id="menu-penjadwalan" onclick="loadPage('penjadwalan')" title="Penjadwalan SAW" class="w-full flex items-center h-12 hover:bg-slate-800 transition-colors group">
+                        <div class="w-20 flex-shrink-0 flex items-center justify-center">
+                            <i class="ph ph-calendar-check text-2xl text-slate-400 group-hover:text-indigo-400 transition-colors nav-icon"></i>
+                        </div>
+                        <span class="whitespace-nowrap text-sm text-slate-400 group-hover:text-slate-100 transition-opacity duration-300 opacity-0 sidebar-text pr-4">Penjadwalan Piket Anggota</span>
+                    </button>
+                    
+                    <button id="menu-kriteria" onclick="loadPage('kriteria')" title="Pengaturan Bobot" class="w-full flex items-center h-12 hover:bg-slate-800 transition-colors group">
+                        <div class="w-20 flex-shrink-0 flex items-center justify-center">
+                            <i class="ph ph-sliders-horizontal text-2xl text-slate-400 group-hover:text-indigo-400 transition-colors nav-icon"></i>
+                        </div>
+                        <span class="whitespace-nowrap text-sm text-slate-400 group-hover:text-slate-100 transition-opacity duration-300 opacity-0 sidebar-text pr-4">Pengaturan Bobot</span>
+                    </button>
+                </div>
+            </nav>
+
+            <button onclick="loadPage('about')" title="About" class="w-full flex items-center h-12 hover:bg-slate-800 transition-colors group">
+                <div class="w-20 flex-shrink-0 flex items-center justify-center">
+                    <i class="ph ph-info text-2xl text-slate-400 group-hover:text-indigo-400 transition-colors nav-icon"></i>
+                </div>
+                    <span class="whitespace-nowrap text-sm tracking-tight text-slate-400 group-hover:text-slate-100 transition-opacity duration-300 opacity-0 sidebar-text pr-2">Tentang Pengembang</span>
+            </button>
+
+            <div class="mt-auto border-t border-slate-800">
+                <button onclick="handleLogout()" title="Keluar Sistem" class="w-full flex items-center h-[73px] hover:bg-red-500/10 transition-colors group">
+                    <div class="w-20 flex-shrink-0 flex items-center justify-center">
+                        <i class="ph ph-sign-out text-2xl text-red-400 group-hover:text-red-300 transition-colors nav-icon"></i>
+                    </div>
+                    <span class="whitespace-nowrap text-sm font-medium text-red-400 group-hover:text-red-300 transition-opacity duration-300 opacity-0 sidebar-text pr-4">Keluar Sistem</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-w-0 flex flex-col h-screen overflow-y-auto relative bg-gradient-to-br from-slate-900 via-[#0f172a] to-indigo-950 transition-all duration-300">
+            <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 z-10 sticky top-0 h-[73px] flex-shrink-0 px-8 flex justify-between items-center w-full shadow-sm">
+                
+                <h1 class="text-xl font-bold text-slate-100 tracking-wide cursor-pointer hover:text-indigo-400 transition-colors" onclick="loadPage('dashboard')">
+                    Sistem Pendukung Keputusan
+                </h1>
+                
+                <div class="flex items-center space-x-3 cursor-default">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold text-slate-200">Kesekretariatan</p>
+                        <p class="text-[10px] uppercase tracking-widest text-indigo-400 font-bold">Admin Panel</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 shadow-sm">
+                        <i class="ph-fill ph-shield-check text-xl"></i>
+                    </div>
+                </div>
+
+            </header>
+
+            <div id="app-content" class="p-8 w-full"></div>
+        
+        </main>
+    </div>
+
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3 pointer-events-none"></div>
+
+    <script type="module">
+        import './js/config.js';
+        import './js/main.js';
+        import './js/admin.js';
+
+        // Cek Keamanan
+        window.addEventListener('load', () => {
+            if(localStorage.getItem('userRole') !== 'admin') {
+                window.location.href = 'index.html';
+            } else {
+                const lastPage = window.location.hash.substring(1);
+                window.loadPage(lastPage || 'dashboard');
+            }
+        });
+    </script>
+</body>
+</html>

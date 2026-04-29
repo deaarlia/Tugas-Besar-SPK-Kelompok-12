@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Anggota {
+  id                 Int              @id @default(autoincrement())
+  sn                 String           @unique
+  nim                String           @unique
+  nama               String
+  jenis_kelamin      String
+  password           String           @default("123456")
+  
+  // --- TAMBAHAN BARU UNTUK FITUR UPLOAD KRS & APPROVAL ---
+  file_krs           String?          // Menyimpan nama file/path PDF KRS
+  status_jadwal      String           @default("draft") // "draft", "pending" (diajukan), "approved" (disetujui)
+
+  jadwal             JadwalHari[] 
+  penugasanPiket     PenugasanPiket[]
+  keberatan          Keberatan[]
+}
+
+model JadwalHari {
+  id        Int        @id @default(autoincrement())
+  anggotaId Int
+  hari      String     // "senin", "selasa", dll
+  
+  shift1    String     @default("kosong")
+  shift2    String     @default("kosong")
+  shift3    String     @default("kosong")
+  shift4    String     @default("kosong")
+  sks       Int        @default(0)
+
+  anggota   Anggota    @relation(fields: [anggotaId], references: [id], onDelete: Cascade)
+  kelasKrs  KelasKRS[] 
+}
+
+model KelasKRS {
+  id         Int        @id @default(autoincrement())
+  jadwalId   Int
+  namaMatkul String
+  jamMulai   String
+  jamSelesai String
+  
+  jadwalHari JadwalHari @relation(fields: [jadwalId], references: [id], onDelete: Cascade)
+}
+
+model Kriteria {
+  id        Int     @id @default(autoincrement())
+  kode      String  @unique // "C1", "C2", "C3", "C4", dst (Sekarang bisa ditambah dinamis)
+  nama      String
+  deskripsi String?
+  bobot     Float   // Contoh: 0.50
+  tipe      String  // "benefit" atau "cost"
+}
+
+model PenugasanPiket {
+  id         Int      @id @default(autoincrement())
+  anggotaId  Int
+  hari       String
+  shift      Int
+  tanggal    DateTime @default(now())
+  
+  anggota    Anggota  @relation(fields: [anggotaId], references: [id], onDelete: Cascade)
+}
+
+model PengaturanSistem {
+  id               Int       @id @default(autoincrement())
+  nama_pengaturan  String    @unique // Misal: "PERIODE_ISI_JADWAL"
+  status           String    @default("buka") // "buka" atau "tutup"
+  batas_waktu      DateTime? // Tanggal dan jam terakhir pengisian
+}
+
+model Keberatan {
+  id        Int      @id @default(autoincrement())
+  anggotaId Int
+  alasan    String   @db.Text
+  tanggal   DateTime @default(now())
+
+  anggota   Anggota  @relation(fields: [anggotaId], references: [id], onDelete: Cascade)
+
+  @@map("keberatan") 
+}
