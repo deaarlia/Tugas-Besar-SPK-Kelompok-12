@@ -21,7 +21,6 @@ model Anggota {
 
   jadwal             JadwalHari[] 
   penugasanPiket     PenugasanPiket[]
-  keberatan          Keberatan[]
 }
 
 model JadwalHari {
