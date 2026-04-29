@@ -73,14 +73,3 @@ model PengaturanSistem {
   status           String    @default("buka") // "buka" atau "tutup"
   batas_waktu      DateTime? // Tanggal dan jam terakhir pengisian
 }
-
-model Keberatan {
-  id        Int      @id @default(autoincrement())
-  anggotaId Int
-  alasan    String   @db.Text
-  tanggal   DateTime @default(now())
-
-  anggota   Anggota  @relation(fields: [anggotaId], references: [id], onDelete: Cascade)
-
-  @@map("keberatan") 
-}
