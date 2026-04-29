@@ -8,13 +8,17 @@ import './user.js';
 // PUSAT NAVIGASI & UI
 // ==========================================
 window.loadPage = async (pageName) => {
+    console.log('loadPage dipanggil:', pageName, '| hash saat ini:', window.location.hash);
+    
     if (window.location.hash !== `#${pageName}`) {
+        console.log('Hash beda, set hash dulu...');
         window.location.hash = pageName;
         return; 
     }
-
+    console.log('Hash cocok, mulai fetch konten...');
+    // ...
     try {
-        const response = await fetch(`/public/pages/${pageName}.html?v=${new Date().getTime()}`);
+        const response = await fetch(`/pages/${pageName}.html?v=${new Date().getTime()}`);
         if (!response.ok) throw new Error("Gagal memuat " + pageName);
         document.getElementById('app-content').innerHTML = await response.text();
 
