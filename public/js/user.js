@@ -214,7 +214,7 @@ window.toggleShift = (s) => {
 
     // 3. Jika bentrok KRS ditemukan, cegah perubahan status
     if (isBentrokKRS) {
-        window.showToast(`Shift ${s} terkunci karena ada jadwal kuliah di jam tersebut.`, "error");
+        alert(`Shift ${s} terkunci karena ada jadwal kuliah di jam tersebut.`, "error");
         return; 
     }
 
@@ -239,10 +239,10 @@ window.submitJadwalUser = async () => {
         if(fileInput && fileInput.files.length > 0) {
             const formData = new FormData(); formData.append('fileKrs', fileInput.files[0]);
             const resUpload = await fetch(`${API_URL}/anggota/upload-krs`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
-            if(!resUpload.ok) window.showToast("Jadwal tersimpan, tapi gagal upload PDF.");
+            if(!resUpload.ok) alert("Jadwal tersimpan, tapi gagal upload PDF.");
         }
 
-        window.showToast(dataJadwal.message); 
+        alert(dataJadwal.message); 
         localStorage.getItem('userRole') === 'admin' ? window.loadPage('anggota') : window.loadPage('dashboard');
-    } catch (err) { window.showToast(err.message || 'Server error!'); }
+    } catch (err) { alert(err.message || 'Server error!'); }
 };

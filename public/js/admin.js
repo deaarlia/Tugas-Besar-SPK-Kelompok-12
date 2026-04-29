@@ -117,14 +117,14 @@ window.editAnggota = (id) => {
     const anggotaTarget = AppState.members.find(m => m.id === id);
     
     if (!anggotaTarget) {
-        return window.showToast("Data anggota tidak ditemukan!", "error");
+        return alert("Data anggota tidak ditemukan!", "error");
     }
 
     AppState.activeMemberData = JSON.parse(JSON.stringify(anggotaTarget));
 
     window.loadPage('update-jadwal');
     
-    window.showToast(`Mode Edit: Jadwal ${anggotaTarget.nama}`, "success");
+    alert(`Mode Edit: Jadwal ${anggotaTarget.nama}`, "success");
 };
 
 window.approveJadwal = async (id) => {
@@ -151,11 +151,11 @@ window.approveJadwal = async (id) => {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || data.message || "Gagal menyetujui jadwal");
             
-            window.showToast(data.message || "Jadwal berhasil disetujui!", "success");
+            alert(data.message || "Jadwal berhasil disetujui!", "success");
             AppState.members = [];
             window.renderTabelAnggota(); 
         } catch (err) {
-            window.showToast(err.message, "error");
+            alert(err.message, "error");
         }
     }
 };
@@ -184,11 +184,11 @@ window.declineJadwal = async (id) => {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || data.message || "Gagal menolak jadwal");
             
-            window.showToast(data.message || "Jadwal berhasil ditolak!", "success");
+            alert(data.message || "Jadwal berhasil ditolak!", "success");
             AppState.members = [];
             window.renderTabelAnggota(); 
         } catch (err) {
-            window.showToast(err.message, "error");
+            alert(err.message, "error");
         }
     }
 };
@@ -200,15 +200,15 @@ window.editJadwalAdmin = (id) => {
 
 window.saveAnggota = async () => {
     const sn = document.getElementById('inp-sn').value, nim = document.getElementById('inp-nim').value, nama = document.getElementById('inp-nama').value, jk = document.getElementById('inp-jenis_kelamin').value;
-    if (!sn || !nim || !nama) return window.showToast('Semua kolom wajib diisi!', 'error');
+    if (!sn || !nim || !nama) return alert('Semua kolom wajib diisi!', 'error');
     try {
         const res = await fetch(`${API_URL}/anggota`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }, body: JSON.stringify({ sn, nim, nama, jenis_kelamin: jk }) });
-        if (res.ok) { window.closeModal('modal-tambah'); window.showToast('Anggota tersimpan.', 'success'); window.fetchMembers(); } else window.showToast('Gagal menyimpan.', 'error');
-    } catch (err) { window.showToast('Server error', 'error'); }
+        if (res.ok) { window.closeModal('modal-tambah'); alert('Anggota tersimpan.', 'success'); window.fetchMembers(); } else alert('Gagal menyimpan.', 'error');
+    } catch (err) { alert('Server error', 'error'); }
 };
 
 window.reviewJadwal = async (id, action) => {
-    try { const res = await fetch(`${API_URL}/jadwal/review/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }, body: JSON.stringify({ action }) }); if(res.ok) { window.showToast("Status jadwal diperbarui!", "success"); window.fetchMembers(); } } catch(e) { window.showToast("Error", "error"); }
+    try { const res = await fetch(`${API_URL}/jadwal/review/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }, body: JSON.stringify({ action }) }); if(res.ok) { alert("Status jadwal diperbarui!", "success"); window.fetchMembers(); } } catch(e) { alert("Error", "error"); }
 };
 
 // ==========================================
@@ -260,7 +260,7 @@ window.validasiDanTugaskan = async (anggotaId, hari, shift, nama) => {
 
         // VALIDASI 1: Cek Kapasitas Shift (Maksimal 2 orang)
         if (jadwal[hari] && jadwal[hari][shift] && jadwal[hari][shift].length >= 2) {
-            return window.showToast(`Gagal: Shift ${shift} di hari ${hari} sudah penuh (Maks 2 orang)!`, "error");
+            return alert(`Gagal: Shift ${shift} di hari ${hari} sudah penuh (Maks 2 orang)!`, "error");
         }
 
         // VALIDASI 2: Cek Duplikasi 1 MINGGU PENUH (Senin - Jumat)
@@ -279,14 +279,14 @@ window.validasiDanTugaskan = async (anggotaId, hari, shift, nama) => {
         }
 
         if (isAlreadyAssigned) {
-            return window.showToast(`Gagal: ${nama} sudah mendapat jatah piket di hari lain! (Maks 1 shift/minggu)`, "error");
+            return alert(`Gagal: ${nama} sudah mendapat jatah piket di hari lain! (Maks 1 shift/minggu)`, "error");
         }
 
         // Eksekusi penugasan jika aman
         window.updatePenugasan(anggotaId, hari, shift, 'assign');
 
     } catch(e) {
-        window.showToast("Gagal memvalidasi jadwal dengan server.", "error");
+        alert("Gagal memvalidasi jadwal dengan server.", "error");
     }
 };
 
@@ -308,7 +308,7 @@ window.updatePenugasan = async (anggotaId, hari, shift, action) => {
             throw new Error(errorData.error || errorData.message || `Server Error: ${res.status}`);
         }
         
-        window.showToast(action === 'assign' ? "Anggota berhasil ditugaskan!" : "Tugas anggota dibatalkan.", "success");
+        alert(action === 'assign' ? "Anggota berhasil ditugaskan!" : "Tugas anggota dibatalkan.", "success");
         
         // Update UI secara realtime
         if(document.getElementById('sel-hari')) window.runSAW(); 
@@ -318,7 +318,7 @@ window.updatePenugasan = async (anggotaId, hari, shift, action) => {
     } catch (err) { 
         console.error("Detail Error Penugasan:", err);
         // Tampilkan pesan error ASLI ke layar (Toast)
-        window.showToast(err.message === "Failed to fetch" ? "Server backend mati / tidak merespon" : err.message, "error"); 
+        alert(err.message === "Failed to fetch" ? "Server backend mati / tidak merespon" : err.message, "error"); 
     }
 };
 
@@ -409,8 +409,8 @@ window.loadKriteria = async () => {
 window.updateBobotLocally = (idx, val) => { AppState.listKriteria[idx].bobot = parseFloat(val); };
 
 window.saveBobot = async () => {
-    if (Math.abs(AppState.listKriteria.reduce((s, k) => s + k.bobot, 0) - 1.0) > 0.001) return window.showToast("Total bobot wajib 1.00", "error");
-    try { await fetch(`${API_URL}/kriteria`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }, body: JSON.stringify(AppState.listKriteria) }); window.showToast("Bobot diperbarui!", "success"); } catch(e) { window.showToast("Server Error", "error"); }
+    if (Math.abs(AppState.listKriteria.reduce((s, k) => s + k.bobot, 0) - 1.0) > 0.001) return alert("Total bobot wajib 1.00", "error");
+    try { await fetch(`${API_URL}/kriteria`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }, body: JSON.stringify(AppState.listKriteria) }); alert("Bobot diperbarui!", "success"); } catch(e) { alert("Server Error", "error"); }
 };
 
 // Fungsi Pintar: Buka modal untuk TAMBAH (id null) atau EDIT (id ada)
@@ -444,7 +444,7 @@ window.saveNewKriteria = async () => {
         bobot: document.getElementById('kri-bobot').value,
         deskripsi: document.getElementById('kri-deskripsi').value
     };
-    if(!data.kode || !data.nama || !data.bobot) return window.showToast("Kode, Nama, dan Bobot wajib diisi!", "error");
+    if(!data.kode || !data.nama || !data.bobot) return alert("Kode, Nama, dan Bobot wajib diisi!", "error");
 
     try {
         // Jika ada editKriteriaId, lakukan PUT (Edit), jika tidak POST (Tambah)
@@ -454,17 +454,17 @@ window.saveNewKriteria = async () => {
         const res = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }, body: JSON.stringify(data) });
         
         if(res.ok) {
-            window.showToast(AppState.editKriteriaId ? "Kriteria berhasil diupdate!" : "Kriteria berhasil ditambah!", "success");
+            alert(AppState.editKriteriaId ? "Kriteria berhasil diupdate!" : "Kriteria berhasil ditambah!", "success");
             window.closeModal('modal-kriteria');
             window.loadKriteria(); 
-        } else { window.showToast("Gagal menyimpan kriteria.", "error"); }
-    } catch(e) { window.showToast("Gagal koneksi ke server", "error"); }
+        } else { alert("Gagal menyimpan kriteria.", "error"); }
+    } catch(e) { alert("Gagal koneksi ke server", "error"); }
 };
 
 window.updateBobotLocally = (idx, val) => { AppState.listKriteria[idx].bobot = parseFloat(val); };
 window.saveBobot = async () => {
-    if (Math.abs(AppState.listKriteria.reduce((s, k) => s + k.bobot, 0) - 1.0) > 0.001) return window.showToast("Total bobot wajib 1.00", "error");
-    try { await fetch(`${API_URL}/kriteria`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }, body: JSON.stringify(AppState.listKriteria) }); window.showToast("Bobot diperbarui!", "success"); } catch(e) {}
+    if (Math.abs(AppState.listKriteria.reduce((s, k) => s + k.bobot, 0) - 1.0) > 0.001) return alert("Total bobot wajib 1.00", "error");
+    try { await fetch(`${API_URL}/kriteria`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }, body: JSON.stringify(AppState.listKriteria) }); alert("Bobot diperbarui!", "success"); } catch(e) {}
 };
 
 window.cekStatusPeriodeUI = () => {
@@ -496,13 +496,13 @@ window.togglePeriode = async () => {
     if(!await window.showConfirm(`Apakah Anda yakin ingin ${newStatus} periode jadwal?`)) return;
     try {
         const res = await fetch(`${API_URL}/pengaturan`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }, body: JSON.stringify({ status: newStatus }) });
-        if(res.ok) { AppState.statusPeriode = newStatus; window.cekStatusPeriodeUI(); window.showToast(`Periode resmi di${newStatus}.`, 'success'); }
-    } catch(e) { window.showToast("Gagal update periode", "error"); }
+        if(res.ok) { AppState.statusPeriode = newStatus; window.cekStatusPeriodeUI(); alert(`Periode resmi di${newStatus}.`, 'success'); }
+    } catch(e) { alert("Gagal update periode", "error"); }
 };
 
 window.exportKeExcel = () => {
     const tabelRahasia = document.getElementById('tabel-rahasia-excel');
-    if(!tabelRahasia || tabelRahasia.innerHTML === "") return window.showToast("Data jadwal kosong, tidak ada yang diekspor.", "error");
+    if(!tabelRahasia || tabelRahasia.innerHTML === "") return alert("Data jadwal kosong, tidak ada yang diekspor.", "error");
     const workbook = XLSX.utils.table_to_book(tabelRahasia, {sheet: "Jadwal Piket"});
     XLSX.writeFile(workbook, "Jadwal_Piket_NeoTelemetri.xlsx");
 };
@@ -514,7 +514,7 @@ window.saveNewKriteria = async () => {
     const tipe = document.getElementById('kri-tipe').value;
     const bobot = document.getElementById('kri-bobot').value;
 
-    if(!kode || !nama || !bobot) return window.showToast("Semua data wajib diisi!", "error");
+    if(!kode || !nama || !bobot) return alert("Semua data wajib diisi!", "error");
 
     try {
         const res = await fetch(`${API_URL}/kriteria`, {
@@ -527,14 +527,14 @@ window.saveNewKriteria = async () => {
         });
         
         if(res.ok) {
-            window.showToast("Kriteria berhasil ditambah!", "success");
+            alert("Kriteria berhasil ditambah!", "success");
             window.closeModal('modal-kriteria');
             window.loadKriteria(); // Refresh tabel kriteria
         } else {
             const err = await res.json();
-            window.showToast(err.error, "error");
+            alert(err.error, "error");
         }
     } catch(e) {
-        window.showToast("Gagal koneksi ke server", "error");
+        alert("Gagal koneksi ke server", "error");
     }
 };

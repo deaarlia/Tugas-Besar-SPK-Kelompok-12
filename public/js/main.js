@@ -225,8 +225,7 @@ window.loadJadwalFinal = async () => {
             htmlExcel += `<tr><td>${hari.toUpperCase()}</td>`;
             
             [1, 2, 3, 4].forEach(s => {
-                // Tampilan list tanpa box, garis divider memenuhi lebar sel
-                let namaPetugasUI = data[hari][s].map(p => { 
+                let namaPetugasUI = data[hari][String(s)].map(p => { 
                     return `<div class="px-6 py-3 font-bold text-indigo-300 text-[13px] border-b border-slate-700/60 last:border-0">${p.nama}</div>`; 
                 }).join('');
                 
