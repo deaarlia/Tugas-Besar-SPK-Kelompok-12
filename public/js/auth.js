@@ -58,37 +58,49 @@ window.checkSession = async () => {
     const token = localStorage.getItem('adminToken');
     const role = localStorage.getItem('userRole'); 
     
-    try {
-        let resPeriode = await fetch(`${API_URL}/pengaturan`);
-        let dataPeriode = await resPeriode.json();
-        AppState.statusPeriode = dataPeriode.status;
-    } catch(e) {}
-
+    // Pastikan element ada sebelum dimanipulasi agar tidak error
     const screenLogin = document.getElementById('screen-login');
     const screenApp = document.getElementById('screen-app');
 
     if (token) {
-        screenLogin.classList.add('hidden');
-        screenApp.classList.remove('hidden');
+        // SEMBUNYIKAN LOGIN, TAMPILKAN APP
+        if(screenLogin) screenLogin.style.display = 'none';
+        if(screenApp) screenApp.style.display = 'block';
         
+        // Load data periode
+        try {
+            let resPeriode = await fetch(`${API_URL}/pengaturan`);
+            let dataPeriode = await resPeriode.json();
+            AppState.statusPeriode = dataPeriode.status;
+        } catch(e) {}
+
         const roleBadge = document.getElementById('role-badge');
         if(roleBadge) {
             roleBadge.innerText = role === 'admin' ? 'Admin Panel' : 'Member Area';
-            if(role === 'user') roleBadge.className = 'text-sm text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200';
         }
         
+        // Logika Menu
+        const adminMenus = document.getElementById('admin-menus');
+        const userMenus = document.getElementById('menu-jadwal-saya');
+
         if (role === 'admin') {
-            document.getElementById('admin-menus').style.display = 'block';
-            document.getElementById('menu-jadwal-saya').style.display = 'none'; 
+            if(adminMenus) adminMenus.style.display = 'block';
+            if(userMenus) userMenus.style.display = 'none'; 
             window.loadPage('dashboard');
-        } else if (role === 'user') {
-            document.getElementById('admin-menus').style.display = 'none'; 
-            document.getElementById('menu-jadwal-saya').style.display = 'flex'; 
+        } else {
+            if(adminMenus) adminMenus.style.display = 'none'; 
+            if(userMenus) userMenus.style.display = 'flex'; 
             window.loadPage('dashboard'); 
         }
     } else {
-        screenApp.classList.add('hidden');
-        screenLogin.classList.remove('hidden');
+        // TIDAK ADA TOKEN: TAMPILKAN LOGIN, SEMBUNYIKAN APP
+        if(screenApp) screenApp.style.display = 'none';
+        if(screenLogin) screenLogin.style.display = 'block';
+        
+        // Jika sedang di halaman admin/user tapi tidak ada token, tendang ke index
+        if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/') {
+            window.location.href = '/index.html';
+        }
     }
 };
 
