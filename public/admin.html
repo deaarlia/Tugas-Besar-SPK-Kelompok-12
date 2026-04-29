@@ -113,6 +113,10 @@
         import './js/main.js';
         import './js/admin.js';
 
+        if(localStorage.getItem('userRole') !== 'admin') {
+            window.location.href = '/index.html'; // Pakai slash!
+        }
+
         // Cek Keamanan
         window.addEventListener('load', () => {
             if(localStorage.getItem('userRole') !== 'admin') {

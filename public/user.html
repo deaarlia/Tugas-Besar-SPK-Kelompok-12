@@ -85,6 +85,10 @@
         import './js/main.js';
         import './js/user.js';
 
+    if(localStorage.getItem('userRole') !== 'user') {
+        window.location.href = '/index.html'; // Pakai slash!
+    }
+
         const renderProfile = () => {
             let nama = localStorage.getItem('userName');
             let nim = localStorage.getItem('userNim');
