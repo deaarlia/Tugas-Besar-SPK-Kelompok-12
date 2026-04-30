@@ -232,17 +232,31 @@ window.updateSKS = (val) => {
 window.submitJadwalUser = async () => {
     const token = localStorage.getItem('adminToken'), fileInput = document.getElementById('inp-file-krs');
     try {
-        const resJadwal = await fetch(`${API_URL}/jadwal/${AppState.activeMemberData.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(AppState.activeMemberData.jadwal) });
+        const resJadwal = await fetch(`${API_URL}/jadwal/${AppState.activeMemberData.id}`, { 
+            method: 'PUT', 
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
+            body: JSON.stringify(AppState.activeMemberData.jadwal) 
+        });
         const dataJadwal = await resJadwal.json();
         if(!resJadwal.ok) throw new Error(dataJadwal.error);
 
         if(fileInput && fileInput.files.length > 0) {
-            const formData = new FormData(); formData.append('fileKrs', fileInput.files[0]);
-            const resUpload = await fetch(`${API_URL}/anggota/upload-krs`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
+            const formData = new FormData(); 
+            formData.append('fileKrs', fileInput.files[0]);
+            const resUpload = await fetch(`${API_URL}/anggota/upload-krs`, { 
+                method: 'POST', 
+                headers: { 'Authorization': `Bearer ${token}` }, 
+                body: formData 
+            });
             if(!resUpload.ok) alert("Jadwal tersimpan, tapi gagal upload PDF.");
         }
 
-        alert(dataJadwal.message); 
+        alert(dataJadwal.message);
+        
+        // ← Tambahkan ini: reset AppState supaya fetch ulang dari server
+        AppState.members = [];
+        AppState.activeMemberData = null;
+        
         localStorage.getItem('userRole') === 'admin' ? window.loadPage('anggota') : window.loadPage('dashboard');
     } catch (err) { alert(err.message || 'Server error!'); }
 };
