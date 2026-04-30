@@ -5,13 +5,38 @@ window.initUpdateJadwalPage = async () => {
     
     if (role === 'user') {
         if(AppState.members.length === 0) await window.fetchMembers();
-        AppState.activeMemberData = JSON.parse(JSON.stringify(AppState.members.find(x => x.id === parseInt(localStorage.getItem('userId'))))); 
+        AppState.activeMemberData = JSON.parse(JSON.stringify(
+            AppState.members.find(x => x.id === parseInt(localStorage.getItem('userId')))
+        )); 
     }
     
     if(!AppState.activeMemberData) return window.loadPage('dashboard');
 
-    // === 1. PERBAIKAN JUDUL HALAMAN (Sekarang pakai pemanggil ID yang kebal error) ===
+    // ← TAMBAHKAN INI: Deduplicate jadwal, ambil entry dengan kelasKrs terbanyak
+    const hariList = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
+    const jadwalBersih = [];
+    
+    hariList.forEach(hari => {
+        const entries = AppState.activeMemberData.jadwal.filter(j => j.hari === hari);
+        
+        if (entries.length === 0) {
+            // Tidak ada data → buat default kosong
+            jadwalBersih.push({ hari, shift1:'kosong', shift2:'kosong', shift3:'kosong', shift4:'kosong', sks:0, kelasKrs:[] });
+        } else if (entries.length === 1) {
+            jadwalBersih.push(entries[0]);
+        } else {
+            // Ada duplikat → ambil yang punya kelasKrs terbanyak
+            const best = entries.reduce((a, b) => 
+                (b.kelasKrs?.length || 0) > (a.kelasKrs?.length || 0) ? b : a
+            );
+            jadwalBersih.push(best);
+        }
+    });
+    
+    AppState.activeMemberData.jadwal = jadwalBersih;
+
     const judulPage = document.querySelector('#page-update-jadwal h2');
+  
     if (role === 'admin' && judulPage) {
         judulPage.innerText = `Edit Jadwal: ${AppState.activeMemberData.nama}`;
     }

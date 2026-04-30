@@ -3,39 +3,59 @@ const prisma = new PrismaClient();
 
 const simpanJadwal = async (req, res) => {
     const { anggotaId } = req.params;
-    const jadwalData = req.body; 
+    const jadwalData = req.body;
 
     try {
-        // 1. CEK STATUS PERIODE (Apakah sedang buka atau tutup?)
-        let setting = await prisma.pengaturanSistem.findUnique({ where: { nama_pengaturan: "PERIODE_ISI_JADWAL" }});
-        let isOpen = setting ? setting.status === "buka" : true;
+        // 1. Hapus kelasKrs dulu (child), baru jadwalHari (parent)
+        const jadwalLama = await prisma.jadwalHari.findMany({
+            where: { anggotaId: parseInt(anggotaId) }
+        });
+        const jadwalIds = jadwalLama.map(j => j.id);
         
-        // Jika buka -> Langsung sah (approved). Jika tutup -> Diajukan (pending)
+        if (jadwalIds.length > 0) {
+            await prisma.kelasKRS.deleteMany({
+                where: { jadwalId: { in: jadwalIds } }
+            });
+        }
+        await prisma.jadwalHari.deleteMany({
+            where: { anggotaId: parseInt(anggotaId) }
+        });
+
+        // 2. Cek status periode
+        let setting = await prisma.pengaturanSistem.findUnique({ 
+            where: { nama_pengaturan: "PERIODE_ISI_JADWAL" }
+        });
+        let isOpen = setting ? setting.status === "buka" : true;
         let newStatus = isOpen ? "approved" : "pending";
 
-        // 2. HAPUS jadwal lama lalu SIMPAN jadwal baru
-        await prisma.jadwalHari.deleteMany({ where: { anggotaId: parseInt(anggotaId) } });
-
+        // 3. Simpan jadwal baru (hanya 5 hari unik)
         for (const j of jadwalData) {
             await prisma.jadwalHari.create({
                 data: {
                     anggotaId: parseInt(anggotaId),
-                    hari: j.hari, shift1: j.shift1, shift2: j.shift2, shift3: j.shift3, shift4: j.shift4, sks: j.sks,
+                    hari: j.hari,
+                    shift1: j.shift1, shift2: j.shift2, 
+                    shift3: j.shift3, shift4: j.shift4, 
+                    sks: j.sks,
                     kelasKrs: {
-                        create: j.kelasKrs.map(k => ({ namaMatkul: k.namaMatkul, jamMulai: k.jamMulai, jamSelesai: k.jamSelesai }))
+                        create: j.kelasKrs.map(k => ({ 
+                            namaMatkul: k.namaMatkul, 
+                            jamMulai: k.jamMulai, 
+                            jamSelesai: k.jamSelesai 
+                        }))
                     }
                 }
             });
         }
 
-        // 3. UPDATE STATUS JADWAL ANGGOTA
+        // 4. Update status
         await prisma.anggota.update({
             where: { id: parseInt(anggotaId) },
             data: { status_jadwal: newStatus }
         });
 
         res.json({ 
-            message: isOpen ? "Jadwal berhasil disimpan permanen!" : "Periode ditutup. Jadwal diajukan untuk persetujuan Admin.", 
+            message: isOpen ? "Jadwal berhasil disimpan!" : "Jadwal diajukan untuk persetujuan Admin.", 
             status: newStatus 
         });
 
@@ -61,20 +81,25 @@ const reviewPengajuan = async (req, res) => {
 };
 
 const setPenugasan = async (req, res) => {
-    const { anggotaId, hari, shift, action } = req.body; // action: 'assign' atau 'cancel'
+    const { anggotaId, hari, shift, action } = req.body;
 
     try {
-        const jadwal = await prisma.jadwalHari.findFirst({
-            where: { anggotaId: parseInt(anggotaId), hari: hari }
-        });
-
-        if (!jadwal) return res.status(404).json({error: "Jadwal tidak ditemukan"});
-
-        const shiftField = `shift${shift}`;
-        await prisma.jadwalHari.update({
-            where: { id: jadwal.id },
-            data: { [shiftField]: action === 'assign' ? 'piket' : 'kosong' }
-        });
+        if (action === 'assign') {
+            // Cek dulu apakah sudah ada, hindari duplikat
+            const existing = await prisma.penugasanPiket.findFirst({
+                where: { anggotaId: parseInt(anggotaId), hari, shift: parseInt(shift) }
+            });
+            if (!existing) {
+                await prisma.penugasanPiket.create({
+                    data: { anggotaId: parseInt(anggotaId), hari, shift: parseInt(shift) }
+                });
+            }
+        } else {
+            // Cancel: hapus dari tabel
+            await prisma.penugasanPiket.deleteMany({
+                where: { anggotaId: parseInt(anggotaId), hari, shift: parseInt(shift) }
+            });
+        }
 
         res.json({ message: "Status penugasan berhasil diubah!" });
     } catch (error) {
@@ -85,18 +110,27 @@ const setPenugasan = async (req, res) => {
 
 const getJadwalFinal = async (req, res) => {
     try {
-        const members = await prisma.anggota.findMany({ include: { jadwal: true } });
-        let finalJadwal = { senin: {1:[],2:[],3:[],4:[]}, selasa: {1:[],2:[],3:[],4:[]}, rabu: {1:[],2:[],3:[],4:[]}, kamis: {1:[],2:[],3:[],4:[]}, jumat: {1:[],2:[],3:[],4:[]} };
-
-        members.forEach(m => {
-            m.jadwal.forEach(j => {
-                [1, 2, 3, 4].forEach(s => {
-                    if (j[`shift${s}`] === 'piket') {
-                        finalJadwal[j.hari][s].push({ anggotaId: m.id, nama: m.nama });
-                    }
-                });
-            });
+        const penugasan = await prisma.penugasanPiket.findMany({
+            include: { anggota: true }
         });
+
+        let finalJadwal = { 
+            senin:  {1:[],2:[],3:[],4:[]}, 
+            selasa: {1:[],2:[],3:[],4:[]}, 
+            rabu:   {1:[],2:[],3:[],4:[]}, 
+            kamis:  {1:[],2:[],3:[],4:[]}, 
+            jumat:  {1:[],2:[],3:[],4:[]} 
+        };
+
+        penugasan.forEach(p => {
+            if (finalJadwal[p.hari] && finalJadwal[p.hari][p.shift]) {
+                finalJadwal[p.hari][p.shift].push({ 
+                    anggotaId: p.anggotaId, 
+                    nama: p.anggota.nama 
+                });
+            }
+        });
+
         res.json(finalJadwal);
     } catch (error) {
         res.status(500).json({ error: "Gagal mengambil jadwal final." });
