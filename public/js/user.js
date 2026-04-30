@@ -34,7 +34,11 @@ window.initUpdateJadwalPage = async () => {
     });
     
     AppState.activeMemberData.jadwal = jadwalBersih;
-
+    console.log('=== DEBUG JADWAL ===');
+console.log('Member ID:', AppState.activeMemberData.id);
+console.log('Nama:', AppState.activeMemberData.nama);
+console.log('Jadwal:', JSON.stringify(AppState.activeMemberData.jadwal, null, 2));
+console.log('===================');
     const judulPage = document.querySelector('#page-update-jadwal h2');
   
     if (role === 'admin' && judulPage) {
