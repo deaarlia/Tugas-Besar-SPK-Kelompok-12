@@ -17,21 +17,26 @@ window.initUpdateJadwalPage = async () => {
     const jadwalBersih = [];
     
     hariList.forEach(hari => {
-        const entries = AppState.activeMemberData.jadwal.filter(j => j.hari === hari);
-        
-        if (entries.length === 0) {
-            // Tidak ada data → buat default kosong
-            jadwalBersih.push({ hari, shift1:'kosong', shift2:'kosong', shift3:'kosong', shift4:'kosong', sks:0, kelasKrs:[] });
-        } else if (entries.length === 1) {
-            jadwalBersih.push(entries[0]);
-        } else {
-            // Ada duplikat → ambil yang punya kelasKrs terbanyak
-            const best = entries.reduce((a, b) => 
-                (b.kelasKrs?.length || 0) > (a.kelasKrs?.length || 0) ? b : a
-            );
-            jadwalBersih.push(best);
-        }
-    });
+    const entries = AppState.activeMemberData.jadwal.filter(j => j.hari === hari);
+    
+    if (entries.length === 0) {
+        jadwalBersih.push({ 
+            hari, shift1:'kosong', shift2:'kosong', 
+            shift3:'kosong', shift4:'kosong', sks:0, kelasKrs:[] 
+        });
+    } else if (entries.length === 1) {
+        // ← Deep copy supaya tidak share referensi
+        jadwalBersih.push(JSON.parse(JSON.stringify(entries[0])));
+    } else {
+        const best = entries.reduce((a, b) => 
+            (b.kelasKrs?.length || 0) > (a.kelasKrs?.length || 0) ? b : a
+        );
+        // ← Deep copy supaya tidak share referensi
+        jadwalBersih.push(JSON.parse(JSON.stringify(best)));
+    }
+});
+
+AppState.activeMemberData.jadwal = jadwalBersih;
     
     AppState.activeMemberData.jadwal = jadwalBersih;
     console.log('=== DEBUG JADWAL ===');
