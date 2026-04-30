@@ -266,6 +266,10 @@ window.updateSKS = (val) => {
 window.submitJadwalUser = async () => {
     const token = localStorage.getItem('adminToken'), fileInput = document.getElementById('inp-file-krs');
     try {
+        // ← Tambahkan ini
+        console.log('=== DATA YANG AKAN DIKIRIM ===');
+        console.log(JSON.stringify(AppState.activeMemberData.jadwal, null, 2));
+        console.log('==============================');
         const resJadwal = await fetch(`${API_URL}/jadwal/${AppState.activeMemberData.id}`, { 
             method: 'PUT', 
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
