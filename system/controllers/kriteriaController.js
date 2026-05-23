@@ -59,5 +59,26 @@ const tambahKriteria = async (req, res) => {
         res.status(500).json({ error: "Gagal menambah kriteria. Pastikan kode (C1, C2...) unik." });
     }
 };
+const updateKriteria = async (req, res) => {
+    const { id } = req.params;
+    const { kode, nama, bobot, tipe, deskripsi } = req.body;
 
-module.exports = { getKriteria, updateBobot, tambahKriteria };
+    try {
+        const updated = await prisma.kriteria.update({
+            where: { id: parseInt(id) },
+            data: {
+                kode,
+                nama,
+                bobot: parseFloat(bobot),
+                tipe,
+                deskripsi
+            }
+        });
+        res.json({ message: "Kriteria berhasil diperbarui!", kriteria: updated });
+    } catch (error) {
+        console.error("Error update kriteria:", error);
+        res.status(500).json({ error: "Gagal memperbarui kriteria." });
+    }
+};
+
+module.exports = { getKriteria, updateBobot, tambahKriteria, updateKriteria };

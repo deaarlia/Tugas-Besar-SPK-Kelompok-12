@@ -59,6 +59,7 @@ router.post('/anggota', cekToken, cekAdmin, anggotaCtrl.tambahAnggota);
 router.put('/kriteria', cekToken, cekAdmin, kriteriaCtrl.updateBobot);
 router.put('/penugasan', cekToken, cekAdmin, jadwalCtrl.setPenugasan);
 router.post('/kriteria', cekToken, cekAdmin, kriteriaCtrl.tambahKriteria);
+router.put('/kriteria/:id', cekToken, cekAdmin, kriteriaCtrl.updateKriteria);
 router.put('/pengaturan', cekToken, cekAdmin, pengaturanCtrl.updatePengaturan);
 router.put('/jadwal/review/:anggotaId', cekToken, cekAdmin, jadwalCtrl.reviewPengajuan);
 
