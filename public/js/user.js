@@ -129,7 +129,6 @@ window.renderTabContent = () => {
             <i class="ph-bold ph-plus mr-1"></i> Tambah Matkul
         </button>
     </div>
-    <datalist id="saran-matkul"><option value="Kalkulus"><option value="Fisika Dasar"><option value="Pemrograman Web"><option value="Jaringan Komputer"><option value="Sistem Basis Data"></datalist>
     <div class="space-y-2 mb-2">`;
     
     if(dayData.kelasKrs.length === 0) {
@@ -171,7 +170,7 @@ window.renderTabContent = () => {
         let timeLabel = i === 1 ? '08:00 - 10:00' : i === 2 ? '10:00 - 12:00' : i === 3 ? '12:00 - 14:00' : '14:00 - 16:00';
         
         html += `
-        <div class="px-3.5 py-2.5 border rounded-lg cursor-pointer transition-all flex justify-between items-center shadow-sm ${bgClass}" onclick="toggleShift(${i})">
+        <div class="px-3.5 py-2.5 border rounded-lg cursor-pointer transition-all flex justify-between items-center shadow-sm ${bgClass}" onclick="window.toggleShift(${i})">
             <div>
                 <p class="font-bold text-[13px]">Shift ${i}</p>
                 <p class="text-[10px] opacity-80 mt-0.5">${timeLabel}</p>
