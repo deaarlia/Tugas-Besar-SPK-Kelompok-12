@@ -17,7 +17,6 @@ window.initUpdateJadwalPage = async () => {
     
     hariList.forEach(hari => {
     const entries = AppState.activeMemberData.jadwal.filter(j => j.hari === hari);
-    window.changeTab('senin'); 
     
     if (entries.length === 0) {
         jadwalBersih.push({ 
@@ -192,7 +191,8 @@ window.renderTabContent = () => {
 
 window.cekBentrokKRS = () => {
     let dayData = AppState.activeMemberData.jadwal.find(j => j.hari === AppState.activeDay);
-    
+    if (!dayData) return;
+
     const w = { 
         1: { start: 480, end: 600 }, 
         2: { start: 600, end: 720 }, 
@@ -200,16 +200,16 @@ window.cekBentrokKRS = () => {
         4: { start: 840, end: 960 } 
     };
     
-    dayData.kelasKrs.forEach(k => {
-        if (!k.jamMulai || !k.jamSelesai) return;
-        let [h1, m1] = k.jamMulai.split(':').map(Number);
-        let [h2, m2] = k.jamSelesai.split(':').map(Number);
-        let kStart = h1 * 60 + m1, kEnd = h2 * 60 + m2;
-        
-        [1, 2, 3, 4].forEach(s => { 
-            if (kStart < w[s].end && kEnd > w[s].start)  // ← fix di sini
-                dayData[`shift${s}`] = 'kegiatan'; 
+    [1, 2, 3, 4].forEach(s => {
+        const bentrok = dayData.kelasKrs.some(k => {
+            if (!k.jamMulai || !k.jamSelesai) return false;
+            let [h1, m1] = k.jamMulai.split(':').map(Number);
+            let [h2, m2] = k.jamSelesai.split(':').map(Number);
+            let kStart = h1 * 60 + m1, kEnd = h2 * 60 + m2;
+            return kStart < w[s].end && kEnd > w[s].start;
         });
+        // Hanya paksa 'kegiatan' jika bentrok — jangan sentuh yang tidak bentrok
+        if (bentrok) dayData[`shift${s}`] = 'kegiatan';
     });
 };
 
