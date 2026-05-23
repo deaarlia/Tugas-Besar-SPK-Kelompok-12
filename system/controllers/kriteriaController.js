@@ -77,7 +77,7 @@ const updateKriteria = async (req, res) => {
         res.json({ message: "Kriteria berhasil diperbarui!", kriteria: updated });
     } catch (error) {
         console.error("Error update kriteria:", error);
-        res.status(500).json({ error: "Gagal memperbarui kriteria." });
+        res.status(500).json({ error: error.message });
     }
 };
 
