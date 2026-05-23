@@ -506,35 +506,3 @@ window.exportKeExcel = () => {
     const workbook = XLSX.utils.table_to_book(tabelRahasia, {sheet: "Jadwal Piket"});
     XLSX.writeFile(workbook, "Jadwal_Piket_NeoTelemetri.xlsx");
 };
-
-// Tambahkan di paling bawah js/admin.js
-window.saveNewKriteria = async () => {
-    const kode = document.getElementById('kri-kode').value;
-    const nama = document.getElementById('kri-nama').value;
-    const tipe = document.getElementById('kri-tipe').value;
-    const bobot = document.getElementById('kri-bobot').value;
-
-    if(!kode || !nama || !bobot) return alert("Semua data wajib diisi!", "error");
-
-    try {
-        const res = await fetch(`${API_URL}/kriteria`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}` 
-            },
-            body: JSON.stringify({ kode, nama, tipe, bobot })
-        });
-        
-        if(res.ok) {
-            alert("Kriteria berhasil ditambah!", "success");
-            window.closeModal('modal-kriteria');
-            window.loadKriteria(); // Refresh tabel kriteria
-        } else {
-            const err = await res.json();
-            alert(err.error, "error");
-        }
-    } catch(e) {
-        alert("Gagal koneksi ke server", "error");
-    }
-};
