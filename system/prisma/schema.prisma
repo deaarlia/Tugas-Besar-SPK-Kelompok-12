@@ -52,7 +52,7 @@ model Kriteria {
   id        Int     @id @default(autoincrement())
   kode      String  @unique // "C1", "C2", "C3", "C4", dst (Sekarang bisa ditambah dinamis)
   nama      String
-  deskripsi String?
+  deskripsi String? @db.text
   bobot     Float   // Contoh: 0.50
   tipe      String  // "benefit" atau "cost"
 }

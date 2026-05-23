@@ -192,8 +192,6 @@ window.renderTabContent = () => {
 
 window.cekBentrokKRS = () => {
     let dayData = AppState.activeMemberData.jadwal.find(j => j.hari === AppState.activeDay);
-    dayData.shift1 = 'kosong'; dayData.shift2 = 'kosong'; 
-    dayData.shift3 = 'kosong'; dayData.shift4 = 'kosong';
     
     const w = { 
         1: { start: 480, end: 600 }, 
