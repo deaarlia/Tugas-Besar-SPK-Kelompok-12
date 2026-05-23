@@ -12,12 +12,12 @@ window.initUpdateJadwalPage = async () => {
     
     if(!AppState.activeMemberData) return window.loadPage('dashboard');
 
-    // ← TAMBAHKAN INI: Deduplicate jadwal, ambil entry dengan kelasKrs terbanyak
     const hariList = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
     const jadwalBersih = [];
     
     hariList.forEach(hari => {
     const entries = AppState.activeMemberData.jadwal.filter(j => j.hari === hari);
+    window.changeTab('senin'); 
     
     if (entries.length === 0) {
         jadwalBersih.push({ 
@@ -110,6 +110,7 @@ window.changeTab = (hari) => {
             btn.className = 'tab-btn text-slate-400 hover:text-slate-200 hover:bg-slate-800 px-6 py-2 rounded-lg font-bold text-sm transition'; 
         }
     });
+    window.cekBentrokKRS();
     window.renderTabContent();
 };
 
@@ -191,13 +192,26 @@ window.renderTabContent = () => {
 
 window.cekBentrokKRS = () => {
     let dayData = AppState.activeMemberData.jadwal.find(j => j.hari === AppState.activeDay);
-    dayData.shift1 = 'kosong'; dayData.shift2 = 'kosong'; dayData.shift3 = 'kosong'; dayData.shift4 = 'kosong';
+    dayData.shift1 = 'kosong'; dayData.shift2 = 'kosong'; 
+    dayData.shift3 = 'kosong'; dayData.shift4 = 'kosong';
+    
+    const w = { 
+        1: { start: 480, end: 600 }, 
+        2: { start: 600, end: 720 }, 
+        3: { start: 720, end: 840 }, 
+        4: { start: 840, end: 960 } 
+    };
+    
     dayData.kelasKrs.forEach(k => {
-        if(!k.jamMulai || !k.jamSelesai) return;
-        let [h1, m1] = k.jamMulai.split(':').map(Number), [h2, m2] = k.jamSelesai.split(':').map(Number);
+        if (!k.jamMulai || !k.jamSelesai) return;
+        let [h1, m1] = k.jamMulai.split(':').map(Number);
+        let [h2, m2] = k.jamSelesai.split(':').map(Number);
         let kStart = h1 * 60 + m1, kEnd = h2 * 60 + m2;
-        const w = { 1: {s:480, e:600}, 2: {s:600, e:720}, 3: {s:720, e:840}, 4: {s:840, e:960} };
-        [1, 2, 3, 4].forEach(s => { if (kStart < w[s].e && kEnd > w[s].s) dayData[`shift${s}`] = 'kegiatan'; });
+        
+        [1, 2, 3, 4].forEach(s => { 
+            if (kStart < w[s].end && kEnd > w[s].start)  // ← fix di sini
+                dayData[`shift${s}`] = 'kegiatan'; 
+        });
     });
 };
 
