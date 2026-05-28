@@ -3,53 +3,64 @@ import { API_URL, AppState } from './config.js';
 window.initUpdateJadwalPage = async () => {
     const role = localStorage.getItem('userRole');
     
+    // === 1. sinkronisasi DATA BERDASARKAN ROLE ===
     if (role === 'user') {
-        if(AppState.members.length === 0) await window.fetchMembers();
+        if (AppState.members.length === 0) await window.fetchMembers();
         AppState.activeMemberData = JSON.parse(JSON.stringify(
             AppState.members.find(x => x.id === parseInt(localStorage.getItem('userId')))
         )); 
     }
     
-    if(!AppState.activeMemberData) return window.loadPage('dashboard');
+    // Guard clause jika data member gagal dimuat
+    if (!AppState.activeMemberData) return window.loadPage('dashboard');
 
+    // === 2. NORMALISASI JADWAL (Mencegah Overwrite Data Asli DB) ===
     const hariList = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
     const jadwalBersih = [];
     
     hariList.forEach(hari => {
-    const entries = AppState.activeMemberData.jadwal.filter(j => j.hari === hari);
-    
-    if (entries.length === 0) {
-        jadwalBersih.push({ 
-            hari, shift1:'kosong', shift2:'kosong', 
-            shift3:'kosong', shift4:'kosong', sks:0, kelasKrs:[] 
-        });
-    } else if (entries.length === 1) {
-        // ← Deep copy supaya tidak share referensi
-        jadwalBersih.push(JSON.parse(JSON.stringify(entries[0])));
-    } else {
-        const best = entries.reduce((a, b) => 
-            (b.kelasKrs?.length || 0) > (a.kelasKrs?.length || 0) ? b : a
-        );
-        // ← Deep copy supaya tidak share referensi
-        jadwalBersih.push(JSON.parse(JSON.stringify(best)));
-    }
-});
+        // Menggunakan toLowerCase() untuk menghindari bug mismatch penulisan string hari
+        const entries = AppState.activeMemberData.jadwal.filter(j => j.hari.toLowerCase() === hari);
+        
+        if (entries.length === 0) {
+            // HANYA buat data default kosong jika hari tersebut mutlak tidak ada di DB
+            jadwalBersih.push({ 
+                hari, 
+                shift1: 'kosong', 
+                shift2: 'kosong', 
+                shift3: 'kosong', 
+                shift4: 'kosong', 
+                sks: 0, 
+                kelasKrs: [] 
+            });
+        } else if (entries.length === 1) {
+            // Mempertahankan object asli dari DB (Menjaga nilai shift1-4 'kegiatan' tetap aman)
+            jadwalBersih.push(JSON.parse(JSON.stringify(entries[0])));
+        } else {
+            // Jika ada duplikasi data hari, ambil yang memiliki record kelasKrs terbanyak
+            const best = entries.reduce((a, b) => 
+                (b.kelasKrs?.length || 0) > (a.kelasKrs?.length || 0) ? b : a
+            );
+            jadwalBersih.push(JSON.parse(JSON.stringify(best)));
+        }
+    });
 
-AppState.activeMemberData.jadwal = jadwalBersih;
-    
+    // Pasang kembali data yang sudah dibersihkan ke AppState
     AppState.activeMemberData.jadwal = jadwalBersih;
+    
+    // === 3. DEBUGGING CONSOLE ===
     console.log('=== DEBUG JADWAL ===');
-console.log('Member ID:', AppState.activeMemberData.id);
-console.log('Nama:', AppState.activeMemberData.nama);
-console.log('Jadwal:', JSON.stringify(AppState.activeMemberData.jadwal, null, 2));
-console.log('===================');
+    console.log('Member ID:', AppState.activeMemberData.id);
+    console.log('Nama:', AppState.activeMemberData.nama);
+    console.log('Jadwal:', JSON.stringify(AppState.activeMemberData.jadwal, null, 2));
+    console.log('===================');
+    
+    // === 4. MANIPULASI UI JUDUL & DESKRIPSI (Berdasarkan Role) ===
     const judulPage = document.querySelector('#page-update-jadwal h2');
-  
     if (role === 'admin' && judulPage) {
         judulPage.innerText = `Edit Jadwal: ${AppState.activeMemberData.nama}`;
     }
 
-    // === 2. SISIPAN UBAH TEKS DESKRIPSI KRS (Sesuai role) ===
     const descKrs = document.getElementById('teks-desc-krs');
     if (role === 'admin' && descKrs) {
         descKrs.innerText = "Dokumen KRS yang telah dilampirkan oleh anggota untuk proses validasi.";
@@ -57,12 +68,12 @@ console.log('===================');
         descKrs.innerText = "Silakan unggah file KRS dalam format .pdf untuk validasi data.";
     }
 
-    // === LOGIKA TOMBOL & LINK KRS ===
+    // === 5. LOGIKA TOMBOL & LINK ATTACHMENT KRS ===
     const linkKrs = document.getElementById('file-link-skrg');
     const inputKrs = document.getElementById('inp-file-krs');
     
-    if(linkKrs) linkKrs.innerHTML = '';
-    if(inputKrs) inputKrs.style.display = 'block';
+    if (linkKrs) linkKrs.innerHTML = '';
+    if (inputKrs) inputKrs.style.display = 'block';
 
     if (role === 'admin') {
         if (inputKrs) inputKrs.style.display = 'none';
@@ -87,16 +98,19 @@ console.log('===================');
         }
     }
 
-    // === LOGIKA PERIODE TUTUP (KHUSUS USER) ===
-    const msgTutup = document.getElementById('msg-tutup'), btnSave = document.getElementById('btn-save-jadwal');
-    if(AppState.statusPeriode === 'tutup' && role === 'user') {
-        if(msgTutup) msgTutup.classList.remove('hidden');
-        if(btnSave) { 
+    // === 6. LOGIKA KUNCI PERIODE (Khusus User) ===
+    const msgTutup = document.getElementById('msg-tutup');
+    const btnSave = document.getElementById('btn-save-jadwal');
+    
+    if (AppState.statusPeriode === 'tutup' && role === 'user') {
+        if (msgTutup) msgTutup.classList.remove('hidden');
+        if (btnSave) { 
             btnSave.innerText = "Ajukan Perubahan Jadwal"; 
             btnSave.className = "px-8 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold shadow-lg transition transform hover:-translate-y-1"; 
         }
     }
 
+    // === 7. INITIALIZE DEFAULT VIEW ===
     window.changeTab('senin');
 };
 
@@ -207,8 +221,11 @@ window.cekBentrokKRS = () => {
             let kStart = h1 * 60 + m1, kEnd = h2 * 60 + m2;
             return kStart < w[s].end && kEnd > w[s].start;
         });
-        // Hanya paksa 'kegiatan' jika bentrok — jangan sentuh yang tidak bentrok
-        if (bentrok) dayData[`shift${s}`] = 'kegiatan';
+
+        if (bentrok) {
+            dayData[`shift${s}`] = 'kegiatan';
+        } 
+        
     });
 };
 
