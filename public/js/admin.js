@@ -20,7 +20,31 @@ window.renderTabelAnggota = async () => {
             AppState.members = data;
         }
         
+        // --- AMBIL ROLE USER DAN STATE SENSOR GLOBAL ---
+        const role = localStorage.getItem('userRole');
+        const isSensored = AppState.isDataSensored; 
+
+        // Penentuan komponen tombol toggle berdasarkan status aktif/tidaknya sensor
+        let btnToggleHTML = '';
+        if (role === 'admin') {
+            const btnClass = isSensored 
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20' 
+                : 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20';
+            const btnIcon = isSensored ? 'ph-eye' : 'ph-eye-slash';
+            const btnText = isSensored ? 'Buka Semua Sensor Data' : 'Tutup / Sensor Kembali Data';
+
+            btnToggleHTML = `
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                    <h2 class="text-base font-bold text-slate-200">Manajemen Anggota Piket</h2>
+                    <button onclick="window.toggleSensorGlobal()" class="flex items-center gap-2 px-4 py-2 border rounded-xl text-xs font-bold transition-all shadow-sm ${btnClass}">
+                        <i class="ph-bold ${btnIcon} text-sm"></i> ${btnText}
+                    </button>
+                </div>
+            `;
+        }
+        
         let htmlUI = `
+        ${btnToggleHTML}
         <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-xl">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-slate-300 border-collapse">
@@ -37,6 +61,12 @@ window.renderTabelAnggota = async () => {
                     <tbody class="divide-y divide-slate-700/60">`;
 
         data.forEach(m => {
+            // --- LOGIKA TRANSFORMASI SENSOR DATA PER BARIS ---
+            // Jika isSensored bernilai true, lewati ke fungsi sensor. Jika false, tampilkan data asli m.
+            const dataTampil = (isSensored && typeof window.maskStudentData === 'function') 
+                ? window.maskStudentData(m) 
+                : m;
+
             // Perhatikan: Gunakan status_jadwal sesuai backend Anda, bukan status
             let currentStatus = (m.status_jadwal || 'KOSONG').toUpperCase();
             
@@ -52,7 +82,6 @@ window.renderTabelAnggota = async () => {
             let actionButtons = '';
 
             if (currentStatus === 'KOSONG' || !m.status_jadwal) {
-                // Jika belum isi sama sekali, cuma bisa Edit, tidak bisa Approve/Reject
                 actionButtons = `
                     <button onclick="window.editAnggota(${m.id})" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 rounded-lg transition-all text-xs font-medium" title="Edit Data">
                         <i class="ph-bold ph-pencil-simple text-sm"></i> Edit
@@ -60,7 +89,6 @@ window.renderTabelAnggota = async () => {
                     <span class="text-xs text-slate-500 italic ml-2">Menunggu pengisian...</span>
                 `;
             } else if (currentStatus === 'APPROVED') {
-                // Jika sudah di-acc, hilangkan tombol Approve/Reject, ganti dengan keterangan
                 actionButtons = `
                     <button onclick="window.editAnggota(${m.id})" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 rounded-lg transition-all text-xs font-medium" title="Edit Data">
                         <i class="ph-bold ph-pencil-simple text-sm"></i> Edit
@@ -70,7 +98,6 @@ window.renderTabelAnggota = async () => {
                     </span>
                 `;
             } else {
-                // Jika statusnya DRAFT (sudah isi tapi belum di-acc), tampilkan semua tombol
                 actionButtons = `
                     <button onclick="window.editAnggota(${m.id})" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 rounded-lg transition-all text-xs font-medium" title="Edit Jadwal">
                         <i class="ph-bold ph-pencil-simple text-sm"></i> Edit
@@ -88,10 +115,10 @@ window.renderTabelAnggota = async () => {
 
             htmlUI += `
             <tr class="bg-slate-800 hover:bg-slate-700/50 transition-colors group">
-                <td class="px-5 py-3 text-[13px] text-slate-300 whitespace-nowrap">${m.sn}</td>
-                <td class="px-5 py-3 text-[13px] text-slate-400 whitespace-nowrap">${m.nim}</td>
-                <td class="px-5 py-3 text-[13px] font-bold text-slate-200 whitespace-nowrap">${m.nama}</td>
-                <td class="px-5 py-3 text-[13px] text-slate-400 text-center">${m.jenis_kelamin || m.jk || '-'}</td>
+                <td class="px-5 py-3 text-[13px] text-slate-300 whitespace-nowrap">${dataTampil.sn}</td>
+                <td class="px-5 py-3 text-[13px] text-slate-400 whitespace-nowrap">${dataTampil.nim}</td>
+                <td class="px-5 py-3 text-[13px] font-bold text-slate-200 whitespace-nowrap">${dataTampil.nama}</td>
+                <td class="px-5 py-3 text-[13px] text-slate-400 text-center">${dataTampil.jenis_kelamin || dataTampil.jk || '-'}</td>
                 
                 <td class="px-5 py-3 text-center align-middle">
                     <span class="px-2 py-0.5 ${statusColor} text-[10px] font-bold uppercase tracking-widest rounded border">${statusText}</span>

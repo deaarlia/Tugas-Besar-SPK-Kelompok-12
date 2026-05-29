@@ -4,9 +4,32 @@ import './auth.js';
 import './admin.js';
 import './user.js';
 
+window.maskStudentData = (student) => {
+    const masked = { ...student };
+    if (masked.sn && masked.sn.length >= 2) masked.sn = masked.sn.slice(0, -2) + 'XX';
+    if (masked.nim && masked.nim.length >= 4) masked.nim = masked.nim.slice(0, -4) + 'XXXX';
+    if (masked.nama) {
+        masked.nama = masked.nama.split(' ').map(word => {
+            return word.length > 1 ? word[0] + '*'.repeat(word.length - 1) : word;
+        }).join(' ');
+    }
+    masked.password = '******';
+    return masked;
+};
+
 // ==========================================
 // PUSAT NAVIGASI & UI
 // ==========================================
+window.toggleSensorGlobal = () => {
+    // Balikkan status state (jika true jadi false, jika false jadi true)
+    AppState.isDataSensored = !AppState.isDataSensored;
+
+    // Panggil ulang fungsi render tabel anggota agar tampilannya berubah
+    if (typeof window.renderTabelAnggota === 'function') {
+        window.renderTabelAnggota();
+    }
+};
+
 window.loadPage = async (pageName) => {
     console.log('loadPage dipanggil:', pageName, '| hash saat ini:', window.location.hash);
     
