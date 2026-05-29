@@ -20,14 +20,37 @@ window.maskStudentData = (student) => {
 // ==========================================
 // PUSAT NAVIGASI & UI
 // ==========================================
+// ==========================================
+// LOGIKA TOMBOL TOGGLE SENSOR GLOBAL (MASSAL)
+// ==========================================
 window.toggleSensorGlobal = () => {
-    // Balikkan status state (jika true jadi false, jika false jadi true)
+    // 1. Balikkan status state sensor global
     AppState.isDataSensored = !AppState.isDataSensored;
 
-    // Panggil ulang fungsi render tabel anggota agar tampilannya berubah
-    if (typeof window.renderTabelAnggota === 'function') {
+    // 2. Deteksi halaman apa yang sedang dibuka user saat ini via URL Hash
+    const currentHash = window.location.hash.replace('#', '');
+
+    // 3. Paksa render ulang halaman yang sedang aktif agar efeknya instan
+    if (currentHash === 'anggota' && typeof window.renderTabelAnggota === 'function') {
         window.renderTabelAnggota();
+    } else if (currentHash === 'dashboard' && typeof window.loadJadwalFinal === 'function') {
+        window.loadJadwalFinal();
+    } else if (currentHash === 'penjadwalan' && typeof window.runSAW === 'function') {
+        window.runSAW();
     }
+};
+
+// Helper untuk menyaring array data berdasarkan state sensor global
+window.getFilteredMembersData = (membersArray) => {
+    if (!membersArray) return [];
+    
+    // Jika state sensor bernilai TRUE, petakan data ke fungsi masker sensor
+    if (AppState.isDataSensored && typeof window.maskStudentData === 'function') {
+        return membersArray.map(m => window.maskStudentData(m));
+    }
+    
+    // Jika FALSE (sensor dibuka), kembalikan data asli apa adanya
+    return membersArray;
 };
 
 window.loadPage = async (pageName) => {
