@@ -271,13 +271,25 @@ window.loadJadwalFinal = async () => {
             htmlExcel += `<tr><td>${hari.toUpperCase()}</td>`;
             
             [1, 2, 3, 4].forEach(s => {
-                let namaPetugasUI = data[hari][String(s)].map(p => { 
+                const petugasRaw = data[hari][String(s)] || [];
+                
+                // =========================================================
+                // SINKRONISASI SENSOR GLOBAL DI DASHBOARD
+                // Melewatkan array petugas shift ke fungsi penyaring global
+                // =========================================================
+                const petugasTampil = typeof window.getFilteredMembersData === 'function'
+                    ? window.getFilteredMembersData(petugasRaw)
+                    : petugasRaw;
+
+                let namaPetugasUI = petugasTampil.map(p => { 
                     return `<div class="px-6 py-3 font-bold text-indigo-300 text-[13px] border-b border-slate-700/60 last:border-0">${p.nama}</div>`; 
                 }).join('');
                 
                 // TD dipasang p-0 (padding 0) agar div memenuhi ruang
                 htmlUI += `<td class="p-0 border-l border-slate-700 align-top">${namaPetugasUI || '<div class="px-6 py-4 text-slate-600 text-[13px] italic">- Kosong -</div>'}</td>`;
-                htmlExcel += `<td>${data[hari][s].map(p => p.nama).join(', ') || 'Kosong'}</td>`;
+                
+                // Untuk data Excel rahasia, biarkan tetap menggunakan nama asli agar hasil unduhan admin tidak rusak
+                htmlExcel += `<td>${petugasRaw.map(p => p.nama).join(', ') || 'Kosong'}</td>`;
             });
             htmlUI += `</tr>`; htmlExcel += `</tr>`;
         });
@@ -299,7 +311,6 @@ window.loadJadwalFinal = async () => {
             if (btnExcel) { btnExcel.classList.remove('hidden'); btnExcel.classList.add('flex'); }
             if (btnTogglePeriode) { btnTogglePeriode.classList.remove('hidden'); btnTogglePeriode.classList.add('flex'); }
         }
-
 
     } catch (e) { console.error(e); }
 };
