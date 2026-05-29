@@ -233,22 +233,78 @@ window.runSAW = async () => {
     tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-400 italic">Mengkalkulasi di Server...</td></tr>';
     
     try {
-        const res = await fetch(`${API_URL}/hitung-saw?hari=${hari}&shift=${shift}`);
-        const kandidat = await res.json();
+        // 1. Ambil data draf perankingan dari server
+        const resSAW = await fetch(`${API_URL}/hitung-saw?hari=${hari}&shift=${shift}`);
+        const kandidatRaw = await resSAW.json();
         
-        if(kandidat.length === 0) return tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-rose-400">Tidak ada anggota tersedia / Semua jadwal bentrok.</td></tr>`;
+        // 2. Ambil data jadwal final saat ini untuk mengecek siapa saja yang SUDAH dapat tugas
+        const resJadwal = await fetch(`${API_URL}/jadwal-final`);
+        const jadwalFinal = await resJadwal.json();
+
+        // 3. Kumpulkan ID pengurus yang sudah ditugaskan di hari & shift manapun
+        const sudahDitugaskanIds = new Set();
+        const hariPekan = ['senin', 'selasa', 'rabu', 'kamis', 'jumat'];
+        
+        hariPekan.forEach(h => {
+            for (let s = 1; s <= 4; s++) {
+                if (jadwalFinal[h] && jadwalFinal[h][s]) {
+                    jadwalFinal[h][s].forEach(p => {
+                        if (p.anggotaId) sudahDitugaskanIds.add(p.anggotaId);
+                    });
+                }
+            }
+        });
+
+        // 4. LOGIKA BARU: Tandai status dan Urutkan (Pindah yang sudah ditugaskan ke bawah)
+        const kandidatDiproses = kandidatRaw.map(k => {
+            return {
+                ...k,
+                isAssigned: sudahDitugaskanIds.has(k.anggotaId) // Tambah flag penanda
+            };
+        });
+
+        // Sorting: isAssigned (false) didahulukan, isAssigned (true) ditaruh di bawah
+        kandidatDiproses.sort((a, b) => a.isAssigned - b.isAssigned);
+        
+        if (kandidatDiproses.length === 0) {
+            return tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-rose-400">Tidak ada data anggota.</td></tr>`;
+        }
         
         tbody.innerHTML = '';
         
-        // Melakukan saringan masking global untuk baris nama kandidat SAW
+        // 5. Jalankan masking sensor global seperti biasa
         const kandidatTampilArray = typeof window.getFilteredMembersData === 'function'
-            ? window.getFilteredMembersData(kandidat)
-            : kandidat;
+            ? window.getFilteredMembersData(kandidatDiproses)
+            : kandidatDiproses;
 
         kandidatTampilArray.forEach((k, index) => { 
-            const originalKandidat = kandidat[index];
+            const originalKandidat = kandidatDiproses[index];
+            
+            // Penentuan desain baris & tombol jika pengurus sudah ditugaskan
+            let rowStyle = '';
+            let actionButton = '';
+
+            if (originalKandidat.isAssigned) {
+                // Jika sudah ditugaskan: baris dibuat agak pudar (opacity), tombol dimatikan
+                rowStyle = 'opacity-40 bg-slate-900/40 line-through text-slate-500';
+                actionButton = `
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-sm">
+                        <i class="ph-fill ph-calendar-check mr-1"></i> Sudah Piket
+                    </span>
+                `;
+            } else {
+                // Jika belum ditugaskan: gaya normal dan tombol aktif
+                rowStyle = 'border-b border-slate-700 hover:bg-slate-700/30 transition-colors';
+                actionButton = `
+                    <button class="bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-300 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm" 
+                        onclick="validasiDanTugaskan(${originalKandidat.anggotaId}, '${hari}', ${shift}, '${originalKandidat.nama.replace(/'/g, "\\'")}')">
+                        Tugaskan
+                    </button>
+                `;
+            }
+
             tbody.innerHTML += `
-            <tr class="border-b border-slate-700 hover:bg-slate-700/30 transition-colors group">
+            <tr class="${rowStyle} group">
                 <td class="px-5 py-3 font-bold text-slate-500">#${index + 1}</td>
                 <td class="px-5 py-3 font-bold text-slate-200">${k.nama}</td>
                 <td class="px-5 py-3 text-center">
@@ -257,13 +313,18 @@ window.runSAW = async () => {
                 <td class="px-5 py-3 text-center text-xs text-slate-500 font-medium">C1:${k.c1} | C2:${k.c2} | C3:${k.c3} | C4:${k.c4}</td>
                 <td class="px-5 py-3 text-center text-xs text-slate-400">${k.jeda}</td>
                 <td class="px-5 py-3 text-center">
-                    <button class="bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-300 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm" onclick="validasiDanTugaskan(${originalKandidat.anggotaId}, '${hari}', ${shift}, '${originalKandidat.nama.replace(/'/g, "\\'")}')">Tugaskan</button>
+                    <div class="flex items-center justify-center">
+                        ${actionButton}
+                    </div>
                 </td>
             </tr>`; 
         });
         
         window.renderTabelPenugasanAdmin();
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e); 
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-rose-400">Gagal memproses perankingan otomatis.</td></tr>';
+    }
 };
 
 window.validasiDanTugaskan = async (anggotaId, hari, shift, nama) => {
@@ -341,16 +402,18 @@ window.renderTabelPenugasanAdmin = async () => {
             htmlUI += `<tr class="bg-slate-800 hover:bg-slate-700/50 transition-colors"><td class="px-5 py-3 capitalize font-bold text-slate-200">${hari}</td>`;
             
             [1, 2, 3, 4].forEach(s => {
-                const petugasRaw = data[hari][s];
+                const petugasRaw = data[hari][s] || [];
                 const petugasTampil = typeof window.getFilteredMembersData === 'function'
                     ? window.getFilteredMembersData(petugasRaw)
                     : petugasRaw;
 
                 let namaPetugasUI = petugasTampil.map((p, idx) => { 
                     const originalP = petugasRaw[idx];
+
+                    const anggotaId = originalP ? originalP.anggotaId : p.anggotaId;
                     return `<div class="px-5 py-3 flex justify-between items-center font-bold text-indigo-300 text-[13px] border-b border-slate-700/60 last:border-0 group">
                         <span>${p.nama}</span> 
-                        <span class="text-slate-500 hover:text-rose-400 cursor-pointer ml-2 flex items-center transition-colors opacity-0 group-hover:opacity-100" onclick="updatePenugasan(${originalP.anggotaId}, '${hari}', ${s}, 'cancel')" title="Hapus dari shift ini"><i class="ph-bold ph-x text-sm"></i></span>
+                        <span class="text-slate-500 hover:text-rose-400 cursor-pointer ml-2 flex items-center transition-colors opacity-0 group-hover:opacity-100" onclick="updatePenugasan(${anggotaId}, '${hari}', ${s}, 'cancel')" title="Hapus dari shift ini"><i class="ph-bold ph-x text-sm"></i></span>
                     </div>`; 
                 }).join('');
                 
