@@ -385,7 +385,7 @@ window.loadKriteria = async () => {
                 <tr class="border-b border-slate-700 hover:bg-slate-700/30 transition-colors group">
                     <td class="px-6 py-4 font-bold text-slate-200">${k.kode}</td>
                     <td class="px-6 py-4 font-bold text-indigo-300">${k.nama}</td>
-                    <td class="px-6 py-4 text-slate-400 text-xs leading-relaxed pr-8">${desc}</td>
+                   <td class="px-6 py-4 text-slate-400 text-xs leading-relaxed pr-8" style="white-space: pre-wrap">${desc}</td>
                     <td class="px-6 py-4 text-center">${badgeTipe}</td>
                     <td class="px-6 py-4 text-center">
                         <input type="number" step="0.01" class="border border-slate-600 bg-slate-900 text-slate-200 rounded-lg px-3 py-1.5 w-20 text-center focus:ring-2 focus:ring-indigo-500 outline-none transition" value="${k.bobot}" onchange="updateBobotLocally(${idx}, this.value)">
@@ -437,6 +437,8 @@ window.openModalKriteria = (id = null) => {
 };
 
 window.saveNewKriteria = async () => {
+        const deskripsi = document.getElementById('kri-deskripsi').value;
+    console.log("Deskripsi raw:", JSON.stringify(deskripsi)); // Harusnya ada \n
     const data = {
         kode: document.getElementById('kri-kode').value,
         nama: document.getElementById('kri-nama').value,
