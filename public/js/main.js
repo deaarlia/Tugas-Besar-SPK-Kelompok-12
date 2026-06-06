@@ -4,6 +4,8 @@ import './auth.js';
 import './admin.js';
 import './user.js';
 
+AppState.isDataSensored = true;
+
 window.maskStudentData = (student) => {
     const masked = { ...student };
     if (masked.sn && masked.sn.length >= 2) masked.sn = masked.sn.slice(0, -2) + 'XX';
